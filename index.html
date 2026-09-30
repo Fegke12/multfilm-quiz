@@ -387,7 +387,7 @@ const ART=`<svg class="art" viewBox="0 0 480 360" role="img" aria-label="Кин�
 function render(){
   renderTop(); const m=$("main"), b=$("bottom");
   const R=ROUNDS[S.r];
-  const V={cover,rules,teamsScr,menu,intro,question,scores,final}[S.screen]||cover;
+  const V={cover,rules,teams:teamsScr,menu,intro,question,scores,final}[S.screen]||cover;
   const out=V(R); m.innerHTML=out.main; b.innerHTML=out.bottom||"";
   m.scrollTop=0; renderTimer(); syncMusic(); if(panelOpen)renderPanel(); save();
 }
