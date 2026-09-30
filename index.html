@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Интерактивная командная игра для урока литературы в 4 классе: советские мультфильмы и книги, по которым они сняты.">
+<meta name="theme-color" content="#2A2320">
+<meta property="og:title" content="Путешествие по миру советских мультфильмов">
+<meta property="og:description" content="Командная игра-викторина для 4 класса: 5 раундов, счёт команд, режим учителя.">
+<meta property="og:image" content="docs/screenshots/01-cover.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23F4B43A' stroke='%2323305E' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%2323305E'/%3E%3Cg fill='%2323305E'%3E%3Ccircle cx='32' cy='16' r='5'/%3E%3Ccircle cx='32' cy='48' r='5'/%3E%3Ccircle cx='16' cy='32' r='5'/%3E%3Ccircle cx='48' cy='32' r='5'/%3E%3C/g%3E%3C/svg%3E">
+<title>Путешествие по мультфильмам</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ruslan+Display&family=Nunito:wght@600;800;900&display=swap">
+<style>
+/* Layout: one 16:9 "кадр" on a film strip; top bar with scores, content in the middle, actions below. Single light look for the projector. */
+:root{
+  --sky:#BFE4DE;      /* мятное небо */
+  --paper:#FFF7E3;    /* бумага карточек */
+  --ink:#23305E;      /* тёмно-синие чернила */
+  --red:#D8473D;      /* кирпично-красный */
+  --sun:#F4B43A;      /* горчично-жёлтый */
+  --leaf:#4E9A5B;     /* зелень, правильный ответ */
+  --film:#2A2320;     /* плёнка */
+  --muted:#5D6A8E;
+  --line:#E3D6B4;
+  --t1:#D8473D; --t2:#2F7FB8; --t3:#4E9A5B; --t4:#B0598F;
+  --display:"Ruslan Display", "Arial Black", Impact, sans-serif;
+  --body:"Nunito", "Trebuchet MS", system-ui, sans-serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+body{margin:0;background:var(--film);color:var(--ink);font-family:var(--body);font-weight:600;
+  display:grid;place-items:center;padding-inline:16px;padding-block:12px;overflow-x:hidden}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
+
+.stage{position:relative;width:min(100%, calc((100dvh - 24px) * 16 / 9));aspect-ratio:16/9;
+  container-type:inline-size;background:var(--sky);border-radius:6px;overflow:hidden;
+  display:flex;flex-direction:column;
+  --pad:max(14px,2.2cqw)}
+/* перфорация киноплёнки */
+.stage::before,.stage::after{content:"";position:absolute;left:0;right:0;height:max(10px,1.3cqw);z-index:3;pointer-events:none;
+  background:var(--film) repeating-linear-gradient(90deg,transparent 0 1.1cqw,var(--paper) 1.1cqw 2.2cqw,transparent 2.2cqw 3.4cqw);
+  background-size:100% 50%;background-position:0 50%;background-repeat:repeat-x}
+.stage::before{top:0}.stage::after{bottom:0}
+
+.top{display:flex;align-items:center;gap:max(8px,1cqw);padding:calc(max(10px,1.3cqw) + max(8px,.9cqw)) var(--pad) max(6px,.6cqw);flex-wrap:wrap}
+.crumb{font-family:var(--display);font-size:max(13px,1.35cqw);letter-spacing:.04em;text-transform:uppercase;min-width:6em;flex:1 1 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chips{display:flex;gap:max(6px,.6cqw);flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:.4em;background:var(--paper);border-radius:999px;padding:.2em .7em .2em .3em;font-size:max(12px,1.1cqw);font-weight:800;border:2px solid var(--ink)}
+.chip i{width:1.3em;height:1.3em;border-radius:50%;display:inline-block;flex:none}
+.chip b{font-variant-numeric:tabular-nums;font-weight:900}
+.tools{display:flex;gap:max(6px,.5cqw)}
+.tbtn{background:var(--paper);border:2px solid var(--ink);border-radius:10px;padding:.3em .6em;font-size:max(12px,.95cqw);font-weight:800;white-space:nowrap}
+.tbtn:hover{background:var(--sun)}
+.tbtn.on{background:var(--ink);color:var(--paper)}
+
+.main{flex:1;min-height:0;overflow:auto;padding:max(6px,.6cqw) var(--pad);display:flex;flex-direction:column}
+.bottom{display:flex;justify-content:space-between;align-items:center;gap:max(8px,1cqw);padding:max(6px,.6cqw) var(--pad) calc(max(10px,1.3cqw) + max(10px,1.1cqw));flex-wrap:wrap}
+.bottom .grp{display:flex;gap:max(8px,1cqw);flex-wrap:wrap}
+
+.btn{font-family:var(--display);font-size:max(15px,1.7cqw);letter-spacing:.03em;background:var(--red);color:var(--paper);
+  border:3px solid var(--ink);border-radius:14px;padding:.45em 1.1em;box-shadow:0 .25em 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(.2em);box-shadow:0 .05em 0 var(--ink)}
+.btn.alt{background:var(--paper);color:var(--ink)}
+.btn.sun{background:var(--sun);color:var(--ink)}
+.btn.green{background:var(--leaf)}
+.btn.big{font-size:max(20px,2.6cqw);padding:.5em 1.4em}
+.btn[disabled]{opacity:.45;pointer-events:none}
+
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance;line-height:1.15}
+.card{background:var(--paper);border:3px solid var(--ink);border-radius:22px;padding:max(14px,2cqw) max(16px,2.6cqw)}
+
+/* COVER */
+.cover{position:relative;flex:1;display:grid;grid-template-columns:1.1fr 1fr;align-items:center;gap:2cqw}
+.cover h1{font-size:max(26px,4.6cqw);color:var(--ink)}
+.cover h1 span{color:var(--red)}
+.cover p{font-size:max(16px,2cqw);font-weight:800;margin:.6em 0 1.2em;color:var(--muted)}
+.art{width:100%;max-width:100%;height:auto;display:block}
+.sunrays{transform-origin:330px 110px;animation:spin 40s linear infinite}
+.twinkle{animation:tw 2.4s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes tw{50%{opacity:.25}}
+
+/* RULES / lists */
+.two{display:grid;grid-template-columns:1.3fr 1fr;gap:2cqw;align-items:start}
+.rules{list-style:none;margin:0;padding:0;display:grid;gap:.55em;font-size:max(16px,1.95cqw);font-weight:800}
+.rules li{display:flex;gap:.6em;align-items:baseline}
+.rules li::before{content:"★";color:var(--red)}
+.pts{display:grid;gap:.6em;font-size:max(16px,1.9cqw);font-weight:800}
+.pts div{display:flex;justify-content:space-between;gap:1em;border-bottom:2px dashed var(--line);padding-bottom:.4em}
+.stars{color:var(--sun);letter-spacing:.05em;-webkit-text-stroke:1px var(--ink)}
+.title-row{display:flex;align-items:baseline;gap:1cqw;margin-bottom:1.4cqw;flex-wrap:wrap}
+.title-row h2{font-size:max(22px,3.3cqw)}
+.note{color:var(--muted);font-size:max(13px,1.3cqw);font-weight:700}
+
+/* TEAMS */
+.teams-setup{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.4cqw}
+.tinput{display:flex;align-items:center;gap:.7em;background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:.5em .8em;font-size:max(16px,1.9cqw)}
+.tinput i{width:1.4em;height:1.4em;border-radius:50%;flex:none}
+.tinput input{border:0;background:transparent;font-weight:900;width:100%;min-width:0;outline:none}
+.seg{display:inline-flex;border:3px solid var(--ink);border-radius:14px;overflow:hidden}
+.seg button{border:0;background:var(--paper);font-weight:900;font-size:max(15px,1.6cqw);padding:.35em 1em}
+.seg button.on{background:var(--ink);color:var(--paper)}
+
+/* MENU */
+.rounds{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1.2cqw;flex:1;align-content:center}
+.rcard{display:flex;flex-direction:column;gap:.5em;text-align:left;background:var(--paper);border:3px solid var(--ink);border-radius:20px;padding:1.2cqw 1.2cqw 1.4cqw;position:relative;min-width:0;box-shadow:0 .35cqw 0 var(--ink);transition:transform .12s}
+.rcard:hover{transform:translateY(-.4cqw) rotate(-.6deg)}
+.rnum{font-family:var(--display);font-size:max(30px,5cqw);line-height:1;color:var(--rc)}
+.rcard h3{font-size:max(14px,1.6cqw)}
+.rcard .meta{font-size:max(12px,1.1cqw);color:var(--muted);font-weight:800}
+.rcard .done{position:absolute;top:.7cqw;right:.8cqw;background:var(--leaf);color:#fff;border-radius:999px;font-size:max(11px,1cqw);padding:.15em .6em;font-weight:900}
+.plan{display:flex;gap:1cqw;flex-wrap:wrap;font-size:max(12px,1.15cqw);color:var(--ink);font-weight:800;margin-top:1.2cqw}
+.plan span{background:rgba(255,255,255,.55);border-radius:999px;padding:.2em .8em}
+
+/* ROUND INTRO */
+.intro{flex:1;display:grid;place-items:center;text-align:center}
+.intro .rbig{font-family:var(--display);font-size:max(22px,2.4cqw);color:var(--rc);letter-spacing:.08em}
+.intro h2{font-size:max(30px,5.4cqw);margin:.25em 0 .35em}
+.intro p{font-size:max(16px,2cqw);font-weight:800;max-width:46ch;margin:0 auto 1.4em}
+
+/* QUESTION */
+.qwrap{flex:1;display:flex;flex-direction:column;gap:1.2cqw;min-height:0}
+.qhead{display:flex;gap:1cqw;align-items:center;flex-wrap:wrap}
+.tag{background:var(--ink);color:var(--paper);border-radius:999px;padding:.2em .9em;font-size:max(12px,1.2cqw);font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.tag.lit{background:var(--sun);color:var(--ink)}
+.qcount{font-weight:900;font-size:max(13px,1.3cqw);color:var(--muted);font-variant-numeric:tabular-nums}
+.qtext{font-size:max(20px,3.1cqw);font-weight:900;line-height:1.2;text-wrap:balance;margin:0}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1cqw}
+.opt{display:flex;align-items:center;gap:.7em;text-align:left;background:var(--paper);border:3px solid var(--ink);border-radius:18px;
+  padding:.55em .8em;font-size:max(16px,2.2cqw);font-weight:900;min-width:0;position:relative;transition:transform .1s,background .2s}
+.opt:hover{transform:translateY(-2px)}
+.opt .l{font-family:var(--display);width:1.7em;height:1.7em;flex:none;display:grid;place-items:center;border-radius:12px;background:var(--sky);border:2px solid var(--ink);font-size:.8em}
+.opt.ok{background:var(--leaf);color:#fff}
+.opt.ok .l{background:#fff;color:var(--leaf)}
+.opt.bad{background:var(--red);color:#fff;animation:shake .4s}
+.opt.bad .l{background:#fff;color:var(--red)}
+.opt.key::after{content:"ответ";position:absolute;top:-.8em;right:.8em;font-size:.5em;background:var(--sun);color:var(--ink);border:2px solid var(--ink);border-radius:999px;padding:0 .6em}
+.opt:disabled{cursor:default}
+.tf{display:grid;grid-template-columns:1fr 1fr;gap:2cqw}
+.tf .opt{justify-content:center;font-family:var(--display);font-size:max(22px,3.6cqw);padding:.6em}
+.tf .opt .dot{width:1em;height:1em;border-radius:50%;border:3px solid var(--ink)}
+@keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+
+.clues{display:grid;gap:1cqw}
+.clue{display:flex;gap:1em;align-items:center;background:var(--paper);border:3px solid var(--ink);border-radius:18px;padding:.6em 1em;font-size:max(17px,2.3cqw);font-weight:900;animation:pop .35s ease-out}
+.clue .n{font-family:var(--display);color:var(--paper);background:var(--red);border-radius:12px;width:1.8em;height:1.8em;display:grid;place-items:center;flex:none;font-size:.8em}
+.clue.hid{background:transparent;border-style:dashed;color:var(--muted);animation:none}
+.clue.hid .n{background:var(--muted)}
+@keyframes pop{from{transform:scale(.94);opacity:.4}}
+
+.answer{background:var(--paper);border:3px solid var(--leaf);border-radius:20px;padding:.9cqw 1.6cqw;display:grid;gap:.4em;animation:pop .35s ease-out}
+.answer .a{font-size:max(17px,2.3cqw);font-weight:900}
+.answer .a b{color:var(--leaf)}
+.answer .f{font-size:max(14px,1.65cqw);font-weight:700;line-height:1.35}
+.answer .f::before{content:"Интересный факт: ";font-weight:900;color:var(--red)}
+.award{display:flex;gap:.7cqw;align-items:center;flex-wrap:wrap;font-size:max(13px,1.35cqw);font-weight:900}
+.aw{border:3px solid var(--tc);background:var(--paper);border-radius:999px;padding:.2em .8em;font-weight:900;color:var(--ink);font-size:max(13px,1.3cqw)}
+.aw.on{background:var(--tc);color:#fff}
+.clip{display:inline-flex;align-items:center;gap:.4em;font-weight:900;font-size:max(13px,1.3cqw);background:var(--ink);color:var(--paper);border:0;border-radius:999px;padding:.3em 1em;text-decoration:none}
+.cliphint{font-size:max(12px,1.15cqw);color:var(--muted);font-weight:800}
+.row{display:flex;gap:1cqw;align-items:center;flex-wrap:wrap}
+
+.timer{font-family:var(--display);font-variant-numeric:tabular-nums;font-size:max(16px,1.8cqw);background:var(--paper);border:3px solid var(--ink);border-radius:14px;padding:.3em .8em;min-width:5.5em;text-align:center}
+.timer.low{background:var(--red);color:var(--paper)}
+
+/* SCORES */
+.board{display:grid;gap:1.1cqw;flex:1;align-content:center}
+.brow{display:grid;grid-template-columns:minmax(0,14em) minmax(0,1fr) auto;gap:1.2cqw;align-items:center;font-size:max(15px,2cqw);font-weight:900}
+.brow .name{display:flex;align-items:center;gap:.5em;min-width:0}
+.brow .name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow .name i{width:1.2em;height:1.2em;border-radius:50%;flex:none}
+.bar{height:max(22px,3cqw);background:rgba(255,255,255,.55);border-radius:999px;border:3px solid var(--ink);overflow:hidden}
+.bar div{height:100%;background:var(--tc);transition:width .5s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:.5em;color:#fff;font-variant-numeric:tabular-nums}
+.pm{display:flex;gap:.4em;align-items:center}
+.pm button{width:1.9em;height:1.9em;border-radius:50%;border:3px solid var(--ink);background:var(--paper);font-weight:900;font-size:.9em;line-height:1}
+.pm b{min-width:2em;text-align:center;font-variant-numeric:tabular-nums;font-size:1.2em}
+
+/* FINAL */
+.final{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:2.5cqw;align-items:center}
+.final h2{font-size:max(30px,5cqw);color:var(--red)}
+.podium{display:grid;gap:1cqw}
+.place{display:flex;align-items:center;gap:.7em;background:var(--paper);border:3px solid var(--ink);border-radius:18px;padding:.45em 1em;font-size:max(17px,2.3cqw);font-weight:900}
+.place .m{font-size:1.4em}
+.place .s{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted)}
+.final p{font-size:max(15px,1.8cqw);font-weight:800;line-height:1.4}
+#confetti{position:absolute;inset:0;pointer-events:none;z-index:2}
+
+/* TEACHER PANEL */
+.panel{position:absolute;inset:0;z-index:5;background:rgba(35,48,94,.55);display:flex;justify-content:flex-end}
+.pbox{background:var(--paper);width:min(100%,560px);height:100%;overflow:auto;padding:18px 20px 28px;display:grid;gap:16px;align-content:start;font-size:15px;border-left:4px solid var(--ink)}
+.pbox h3{font-size:20px}
+.pbox h4{margin:0 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.pbox section{border-top:2px dashed var(--line);padding-top:12px}
+.prow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.prow input[type=text],.prow input[type=url],.prow input[type=number]{border:2px solid var(--ink);border-radius:10px;padding:6px 8px;background:#fff;min-width:0;flex:1}
+.prow input[type=number]{flex:0 0 5em}
+.pbtn{border:2px solid var(--ink);background:#fff;border-radius:10px;padding:6px 12px;font-weight:800}
+.pbtn:hover{background:var(--sun)}
+.pbtn.danger{background:var(--red);color:#fff}
+.pbtn.cur{background:var(--ink);color:#fff}
+.keyline{background:var(--sun);border-radius:10px;padding:8px 10px;font-weight:900}
+.small{font-size:13px;color:var(--muted);font-weight:700}
+.linkq{font-size:13px;font-weight:800;margin-bottom:2px}
+
+@media (max-width:760px){
+  .stage{aspect-ratio:auto;min-height:calc(100dvh - 24px)}
+  .cover,.two,.final{grid-template-columns:1fr}
+  .rounds{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .opts,.teams-setup{grid-template-columns:1fr}
+  .brow{grid-template-columns:minmax(0,1fr) auto}
+  .brow .bar{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="top" id="top"></div>
+  <div class="main" id="main"></div>
+  <div class="bottom" id="bottom"></div>
+  <canvas id="confetti" hidden></canvas>
+  <div class="panel" id="panel" hidden></div>
+</div>
+<audio id="customMusic" loop></audio>
+
+<script>
+/* ============ ДАННЫЕ ИГРЫ ============ */
+const ROUNDS = [
+ {title:"Угадай мультфильм", minutes:7, color:"var(--t1)", type:"choice",
+  about:"Прочитайте вопрос и выберите название мультфильма. Посоветуйтесь в команде, потом отвечайте.",
+  qs:[
+   {q:"В каком мультфильме живут Винни-Пух и Пятачок?", o:["«Винни-Пух»","«Малыш и Карлсон»","«Ну, погоди!»","«Бременские музыканты»"], a:0, p:1, clip:1,
+    f:"Мультфильм снял режиссёр Фёдор Хитрук в 1969 году. Винни-Пуха озвучил актёр Евгений Леонов."},
+   {q:"Мальчик по имени Дядя Фёдор уезжает жить в деревню вместе с котом и псом. Как называется мультфильм?", o:["«Каникулы Бонифация»","«Трое из Простоквашино»","«Котёнок по имени Гав»","«Крокодил Гена»"], a:1, p:1, clip:1,
+    f:"Мультфильм вышел в 1978 году. Он снят по повести Эдуарда Успенского «Дядя Фёдор, пёс и кот»."},
+   {q:"В каком мультфильме Трубадур путешествует с Ослом, Псом, Котом и Петухом?", o:["«Золотая антилопа»","«Снежная королева»","«Бременские музыканты»","«Двенадцать месяцев»"], a:2, p:2, clip:1,
+    f:"Мультфильм вышел в 1969 году. Песни для него написал композитор Геннадий Гладков."},
+   {q:"В каком мультфильме девочка зимой идёт в лес за подснежниками?", o:["«Морозко»","«Снегурочка»","«Серебряное копытце»","«Двенадцать месяцев»"], a:3, p:2, clip:1,
+    f:"Мультфильм 1956 года снят по пьесе-сказке Самуила Маршака. У новогоднего костра девочка встречает все двенадцать месяцев года."},
+   {q:"В каком мультфильме к мальчику прилетает друг с пропеллером на спине?", o:["«Малыш и Карлсон»","«Незнайка в Солнечном городе»","«Винни-Пух»","«Буратино»"], a:0, p:1, clip:1,
+    f:"Мультфильм «Малыш и Карлсон» вышел в 1968 году, а в 1970 году вышло продолжение — «Карлсон вернулся»."},
+   {q:"В каком мультфильме белка грызёт орешки с золотыми скорлупками?", o:["«Сказка о рыбаке и рыбке»","«Сказка о царе Салтане»","«Аленький цветочек»","«Конёк-Горбунок»"], a:1, p:2, clip:1,
+    f:"Мультфильм «Сказка о царе Салтане» сняли в 1984 году. Герои в нём говорят стихами Пушкина."}
+  ]},
+ {title:"Герои", minutes:7, color:"var(--t2)", type:"choice",
+  about:"Вспомните героев мультфильмов: как их зовут и кто с кем дружит.",
+  qs:[
+   {q:"Кто лучший друг Чебурашки?", o:["Кот Матроскин","Крокодил Гена","Винни-Пух","Карлсон"], a:1, p:1, clip:1,
+    f:"Чебурашку придумал писатель Эдуард Успенский. В книге он назван неизвестным науке зверем."},
+   {q:"Как зовут пса из Простоквашино?", o:["Бобик","Тузик","Шарик","Дружок"], a:2, p:1, clip:1,
+    f:"Шарика в мультфильмах о Простоквашино озвучил актёр Лев Дуров."},
+   {q:"Как зовут ослика — друга Винни-Пуха?", o:["Пятачок","Иа-Иа","Кролик","Тигра"], a:1, p:1,
+    f:"Имя ослика похоже на крик настоящего осла. По-английски его зовут Eeyore."},
+   {q:"Кто в мультфильме «Ну, погоди!» всё время пытается поймать Зайца?", o:["Лиса","Медведь","Волк","Кот Леопольд"], a:2, p:1, clip:1,
+    f:"Волка озвучил актёр Анатолий Папанов, а Зайца — актриса Клара Румянова."},
+   {q:"Как зовут почтальона из Простоквашино?", o:["Печкин","Пончиков","Петров","Пяточкин"], a:0, p:2,
+    f:"Почтальон Печкин есть и в книге Успенского. В мультфильмах его озвучил актёр Борис Новиков."}
+  ]},
+ {title:"Правда или вымысел?", minutes:6, color:"var(--t3)", type:"tf",
+  about:"Послушайте утверждение и решите всей командой: это правда или вымысел?",
+  qs:[
+   {q:"Чебурашка впервые появился в книге Эдуарда Успенского.", a:true, p:1,
+    f:"Книга «Крокодил Гена и его друзья» вышла в 1966 году, раньше мультфильма."},
+   {q:"Матроскин — кот.", a:true, p:1,
+    f:"Кот Матроскин очень хозяйственный: в Простоквашино он заводит корову."},
+   {q:"Шарик — кот.", a:false, p:1,
+    f:"Шарик — пёс. Котом в Простоквашино был Матроскин."},
+   {q:"Винни-Пух любит мёд.", a:true, p:1,
+    f:"Ради мёда Винни-Пух даже поднимается на воздушном шарике к дуплу с пчёлами."},
+   {q:"Мультфильм «Бременские музыканты» снят по сказке Пушкина.", a:false, p:1,
+    f:"Сказку «Бременские музыканты» написали немецкие сказочники братья Гримм."},
+   {q:"В конце каждой серии «Ну, погоди!» Волк ловит Зайца.", a:false, p:1,
+    f:"Волку никогда не удаётся поймать Зайца. Поэтому он и кричит свою знаменитую фразу."}
+  ]},
+ {title:"Интересные факты", minutes:6, color:"var(--t4)", type:"choice",
+  about:"Мультфильмы и книги: кто автор, по какому произведению снят мультфильм и что изменилось на экране.",
+  qs:[
+   {t:"Кто автор?", q:"Кто написал книгу о Винни-Пухе?", o:["Алан Александр Милн","Льюис Кэрролл","Редьярд Киплинг","Ганс Христиан Андерсен"], a:0, p:2,
+    f:"На русский язык сказку о Винни-Пухе пересказал поэт Борис Заходер. По его пересказу в 1969–1972 годах сняли три мультфильма."},
+   {t:"По какому произведению?", q:"По какому произведению снят мультфильм «Двенадцать месяцев»?", o:["По сказке Шарля Перро","По рассказу Льва Толстого","По пьесе-сказке Самуила Маршака","По стихам Корнея Чуковского"], a:2, p:2,
+    f:"Маршак написал пьесу-сказку «Двенадцать месяцев» в 1943 году по мотивам старинной славянской легенды."},
+   {t:"Мультфильм или книга?", q:"Что появилось раньше: Чебурашка в книге или Чебурашка в мультфильме?", o:["Книга","Мультфильм","Появились в один день"], a:0, p:2,
+    f:"Книга Эдуарда Успенского вышла в 1966 году, а мультфильм «Крокодил Гена» — в 1969 году."},
+   {t:"Что изменилось?", q:"В сказке братьев Гримм музыканты — осёл, пёс, кот и петух. Кого добавили в мультфильм?", o:["Трубадура и Принцессу","Лису и Зайца","Кота Матроскина","Серого Волка"], a:0, p:3,
+    f:"Сценарий написали Василий Ливанов и Юрий Энтин. От сказки они оставили зверей-музыкантов и придумали новую историю про Трубадура и Принцессу."},
+   {t:"Кто автор?", q:"Кто написал «Сказку о рыбаке и рыбке», по которой снят мультфильм 1950 года?", o:["Михаил Лермонтов","Иван Крылов","Александр Пушкин","Николай Некрасов"], a:2, p:1,
+    f:"Пушкин написал эту сказку осенью 1833 года в селе Болдино."}
+  ]},
+ {title:"Финал", minutes:5, color:"var(--red)", type:"clues",
+  about:"Угадайте мультфильм по трём подсказкам. Подсказки открываются по одной. Каждый ответ — 3 балла. На ответ 30 секунд.",
+  qs:[
+   {c:["Герой живёт на крыше и прилетает через окно.","У него есть пропеллер и кнопка на животе.","Он очень любит варенье и дружит с Малышом."], ans:"«Малыш и Карлсон»", p:3,
+    f:"Книги о Карлсоне написала шведская писательница Астрид Линдгрен."},
+   {c:["Сказку написал датский писатель.","Мальчику в глаз попадает осколок волшебного зеркала.","Девочка Герда отправляется искать Кая."], ans:"«Снежная королева»", p:3,
+    f:"Мультфильм снял режиссёр Лев Атаманов в 1957 году по сказке Ганса Христиана Андерсена."},
+   {c:["Девочка получает волшебный подарок.","У волшебного цветка семь лепестков.","Последний лепесток она тратит, чтобы помочь мальчику Вите."], ans:"«Цветик-семицветик»", p:3,
+    f:"Сказку написал Валентин Катаев, а мультфильм по ней вышел в 1948 году."}
+  ]}
+];
+const TEAM_COLORS=["var(--t1)","var(--t2)","var(--t3)","var(--t4)"];
+const NAME_IDEAS=["Колобки","Звёздочки","Паровозики","Снегири","Кораблики","Ромашки","Непоседы","Фантазёры"];
+const LETTERS=["А","Б","В","Г"];
+
+/* ============ СОСТОЯНИЕ ============ */
+const KEY="multfilm-game-v1";
+function fresh(){return{screen:"cover",teamCount:4,teams:[0,1,2,3].map(i=>({name:"Команда "+(i+1),score:0})),
+  r:0,q:0,revealed:false,picked:null,clues:1,awards:{},done:{},showKey:false,sound:true,music:false,links:{}}}
+let S=fresh();
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null"); if(s&&s.teams) S=Object.assign(fresh(),s);}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let panelOpen=false, confirmEnd=false, confirmReset=false;
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const teams=()=>S.teams.slice(0,S.teamCount);
+const stars=n=>"★".repeat(n);
+const ptsWord=n=>n===1?"балл":(n<5?"балла":"баллов");
+
+/* ============ ЗВУК (синтез, без чужой музыки) ============ */
+let AC=null;
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(AC&&AC.state==="suspended")AC.resume(); return AC}
+function tone(f,t0,d,type="triangle",v=.18){const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain();
+  o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,c.currentTime+t0);g.gain.linearRampToValueAtTime(v,c.currentTime+t0+.02);
+  g.gain.exponentialRampToValueAtTime(.001,c.currentTime+t0+d);o.connect(g).connect(c.destination);o.start(c.currentTime+t0);o.stop(c.currentTime+t0+d+.05)}
+const SFX={
+  ok(){[523,659,784,1047].forEach((f,i)=>tone(f,i*.08,.3))},
+  bad(){tone(220,0,.25,"square",.08);tone(165,.2,.4,"square",.08)},
+  win(){[523,659,784,1047,784,1047].forEach((f,i)=>tone(f,i*.14,i===5?.9:.25,"triangle",.2))},
+  tick(){tone(880,0,.08,"sine",.1)},
+  clue(){tone(660,0,.15,"sine",.12)}
+};
+function sfx(n){if(S.sound)SFX[n]()}
+// фоновая мелодия меню — простая собственная пентатоника
+let musicTimer=null; const MEL=[392,440,523,440,392,330,392,0,440,523,587,523,440,392,440,0];
+function musicWanted(){return S.music&&["cover","rules","teams","menu"].includes(S.screen)}
+function syncMusic(){
+  const cm=$("customMusic");
+  if(musicWanted()){
+    if(cm.src){ if(cm.paused) cm.play().catch(()=>{}); return; }
+    if(!musicTimer){let i=0; musicTimer=setInterval(()=>{const f=MEL[i++%MEL.length]; if(f){tone(f,0,.35,"sine",.05);tone(f/2,0,.35,"triangle",.03)}},330)}
+  } else { if(musicTimer){clearInterval(musicTimer);musicTimer=null} if(!cm.paused)cm.pause() }
+}
+
+/* ============ ТАЙМЕР ============ */
+let timer={left:0,id:null}, timerDone=false;
+function startTimer(sec){stopTimer();timerDone=false;timer.left=sec;renderTimer();timer.id=setInterval(()=>{timer.left--;if(timer.left<=5&&timer.left>0)sfx("tick");
+  if(timer.left<=0){stopTimer();timerDone=true;sfx("bad")}renderTimer()},1000)}
+function stopTimer(){if(timer.id)clearInterval(timer.id);timer.id=null}
+function renderTimer(){const el=$("timer"); if(!el)return;
+  el.textContent=timer.id?("⏱ "+timer.left+" с"):timerDone?"⏱ Время!":"⏱ 30 сек";
+  el.classList.toggle("low",!!(timer.id&&timer.left<=5)||timerDone)}
+
+/* ============ ИЛЛЮСТРАЦИЯ ОБЛОЖКИ ============ */
+const ART=`<svg class="art" viewBox="0 0 480 360" role="img" aria-label="Кинопроектор светит на холмы под солнцем">
+ <circle cx="330" cy="110" r="42" fill="var(--sun)" stroke="var(--ink)" stroke-width="4"/>
+ <g class="sunrays" stroke="var(--sun)" stroke-width="7" stroke-linecap="round">
+  ${Array.from({length:12},(_,i)=>{const a=i*Math.PI/6,x1=330+Math.cos(a)*56,y1=110+Math.sin(a)*56,x2=330+Math.cos(a)*76,y2=110+Math.sin(a)*76;return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`}).join("")}
+ </g>
+ <g fill="var(--paper)" stroke="var(--ink)" stroke-width="4">
+  <path d="M60 90 q10-26 36-18 q12-22 38-6 q22-4 22 18 q0 18-22 18 h-60 q-22 0-14-12z"/>
+ </g>
+ <g fill="var(--sun)"><path class="twinkle" d="M200 40 l5 12 12 5 -12 5 -5 12 -5-12 -12-5 12-5z"/><path class="twinkle" style="animation-delay:1s" d="M420 200 l4 9 9 4 -9 4 -4 9 -4-9 -9-4 9-4z"/><path class="twinkle" style="animation-delay:.5s" d="M40 170 l4 9 9 4 -9 4 -4 9 -4-9 -9-4 9-4z"/></g>
+ <path d="M0 270 q120-70 240-10 t240-20 v120 h-480z" fill="var(--leaf)" stroke="var(--ink)" stroke-width="4"/>
+ <path d="M0 310 q140-50 280 0 t200-10 v60 h-480z" fill="#7DBA6C" stroke="var(--ink)" stroke-width="4"/>
+ <path d="M150 200 L20 110 L20 300 Z" fill="var(--paper)" opacity=".55"/>
+ <g stroke="var(--ink)" stroke-width="4">
+  <rect x="140" y="190" width="110" height="62" rx="10" fill="var(--red)"/>
+  <circle cx="165" cy="165" r="30" fill="var(--paper)"/><circle cx="165" cy="165" r="8" fill="var(--ink)"/>
+  <circle cx="228" cy="165" r="24" fill="var(--paper)"/><circle cx="228" cy="165" r="6" fill="var(--ink)"/>
+  <rect x="124" y="208" width="18" height="26" rx="4" fill="var(--sun)"/>
+  <path d="M170 252 l-14 40 M220 252 l14 40 M195 252 v40" stroke-linecap="round"/>
+ </g>
+ <g fill="var(--ink)">${[0,1,2,3,4,5].map(i=>{const a=i*Math.PI/3;return `<circle cx="${(165+Math.cos(a)*18).toFixed(1)}" cy="${(165+Math.sin(a)*18).toFixed(1)}" r="4"/>`}).join("")}</g>
+</svg>`;
+
+/* ============ ОТРИСОВКА ============ */
+function render(){
+  renderTop(); const m=$("main"), b=$("bottom");
+  const R=ROUNDS[S.r];
+  const V={cover,rules,teamsScr,menu,intro,question,scores,final}[S.screen]||cover;
+  const out=V(R); m.innerHTML=out.main; b.innerHTML=out.bottom||"";
+  m.scrollTop=0; renderTimer(); syncMusic(); if(panelOpen)renderPanel(); save();
+}
+function renderTop(){
+  const R=ROUNDS[S.r];
+  let crumb="";
+  if(["intro","question"].includes(S.screen)) crumb=`Раунд ${S.r+1} · ${R.title}`;
+  else crumb={cover:"",rules:"Правила игры",teams:"Команды",menu:"Выбор раунда",scores:"Счёт",final:"Итоги"}[S.screen]||"";
+  const showChips=!["cover","rules","teams"].includes(S.screen);
+  $("top").innerHTML=`<div class="crumb">${esc(crumb)}</div>
+   ${showChips?`<div class="chips">${teams().map((t,i)=>`<span class="chip"><i style="background:${TEAM_COLORS[i]}"></i>${esc(t.name)} <b>${t.score}</b></span>`).join("")}</div>`:""}
+   <div class="tools">
+    ${showChips?`<button class="tbtn" data-act="go" data-to="menu">В меню</button><button class="tbtn" data-act="go" data-to="scores">Счёт</button>`:""}
+    <button class="tbtn ${S.sound?"on":""}" data-act="sound" aria-pressed="${S.sound}">Звук</button>
+    <button class="tbtn ${S.music?"on":""}" data-act="music" aria-pressed="${S.music}">Музыка</button>
+    <button class="tbtn" data-act="fs" title="Во весь экран">⛶ Экран</button>
+   </div>`;
+}
+function cover(){return{main:`<div class="cover">
+   <div><h1>ПУТЕШЕСТВИЕ ПО&nbsp;МИРУ <span>СОВЕТСКИХ МУЛЬТФИЛЬМОВ</span></h1>
+   <p>Интерактивная игра для 4 класса</p>
+   <div class="row"><button class="btn big" data-act="go" data-to="rules">НАЧАТЬ ИГРУ</button>
+   ${S.screenStarted?`<button class="btn alt" data-act="go" data-to="menu">Продолжить</button>`:""}</div></div>
+   <div>${ART}</div></div>`,
+  bottom:`<span class="note">5 раундов · около 35 минут · 3–4 команды</span><div class="grp"><button class="btn alt" data-act="teacher">РЕЖИМ УЧИТЕЛЯ</button></div>`}}
+function rules(){return{main:`<div class="title-row"><h2>Правила</h2></div>
+  <div class="two"><div class="card"><ul class="rules">
+   <li>Играем командами.</li><li>За правильный ответ команда получает баллы.</li>
+   <li>Не выкрикиваем ответ — сначала советуемся.</li><li>В некоторых заданиях ответ нужно дать за 30 секунд.</li>
+   <li>Побеждает команда, набравшая больше всего баллов.</li></ul></div>
+  <div class="card pts"><h3 style="font-size:max(16px,1.9cqw)">Сколько баллов?</h3>
+   <div><span>Лёгкий вопрос</span><span class="stars">★</span><span>1 балл</span></div>
+   <div><span>Средний</span><span class="stars">★★</span><span>2 балла</span></div>
+   <div><span>Сложный</span><span class="stars">★★★</span><span>3 балла</span></div></div></div>`,
+  bottom:`<button class="btn alt" data-act="go" data-to="cover">Назад</button><button class="btn" data-act="go" data-to="teams">ДАЛЬШЕ</button>`}}
+function teamsScr(){return{main:`<div class="title-row"><h2>Команды</h2>
+   <div class="seg" role="group" aria-label="Сколько команд">${[3,4].map(n=>`<button class="${S.teamCount===n?"on":""}" data-act="count" data-n="${n}">${n} команды</button>`).join("")}</div>
+   <button class="tbtn" data-act="ideas">Придумать названия</button></div>
+   <div class="teams-setup">${teams().map((t,i)=>`<label class="tinput"><i style="background:${TEAM_COLORS[i]}"></i>
+     <input id="team-name-${i}" data-name="${i}" value="${esc(t.name)}" maxlength="22" aria-label="Название команды ${i+1}"></label>`).join("")}</div>
+   <p class="note" style="margin-top:1.4cqw">Названия можно изменить в любой момент в режиме учителя.</p>`,
+  bottom:`<button class="btn alt" data-act="go" data-to="rules">Назад</button><button class="btn" data-act="go" data-to="menu">К РАУНДАМ</button>`}}
+function menu(){S.screenStarted=true;return{main:`<div class="title-row"><h2>Выберите раунд</h2></div>
+   <div class="rounds">${ROUNDS.map((R,i)=>`<button class="rcard" style="--rc:${R.color}" data-act="round" data-r="${i}">
+     ${S.done[i]?`<span class="done">пройден</span>`:""}<span class="rnum">${i+1}</span><h3>${esc(R.title)}</h3>
+     <span class="meta">${R.qs.length} ${R.qs.length<5?"вопроса":"вопросов"} · ~${R.minutes} мин</span></button>`).join("")}</div>
+   <div class="plan"><span>Вступление 2–3 мин</span><span>Раунды 1–4: 26 мин</span><span>Финал 4–5 мин</span><span>Итоги 2 мин</span></div>`,
+  bottom:`<button class="btn alt" data-act="teacher">РЕЖИМ УЧИТЕЛЯ</button><div class="grp"><button class="btn sun" data-act="go" data-to="scores">СЧЁТ</button><button class="btn" data-act="go" data-to="final">ИТОГИ ИГРЫ</button></div>`}}
+function intro(R){return{main:`<div class="intro" style="--rc:${R.color}"><div>
+   <div class="rbig">${S.r===4?"ФИНАЛЬНЫЙ РАУНД":"РАУНД "+(S.r+1)}</div><h2>«${esc(R.title)}»</h2><p>${esc(R.about)}</p>
+   <button class="btn big" data-act="startRound">НАЧАТЬ</button></div></div>`,
+  bottom:`<button class="btn alt" data-act="go" data-to="menu">В МЕНЮ</button><span class="note">${R.qs.length} ${R.qs.length<5?"вопроса":"вопросов"} · около ${R.minutes} минут</span>`}}
+
+function qKey(){return S.r+"-"+S.q}
+function question(R){
+  const Q=R.qs[S.q], k=qKey(), last=S.q===R.qs.length-1;
+  let body="";
+  if(R.type==="choice"){
+    body=`<div class="opts">${Q.o.map((o,i)=>{let c="";if(S.revealed||S.picked!==null){if(i===Q.a&&(S.revealed||S.picked===i))c="ok";else if(i===S.picked)c="bad"}
+      if(S.showKey&&i===Q.a&&!S.revealed)c+=" key";
+      return `<button class="opt ${c}" data-act="pick" data-i="${i}" ${S.revealed?"disabled":""}><span class="l">${LETTERS[i]}</span><span>${esc(o)}</span></button>`}).join("")}</div>`;
+  } else if(R.type==="tf"){
+    body=`<div class="tf">${[true,false].map(v=>{let c="";if(S.revealed||S.picked!==null){if(v===Q.a&&(S.revealed||S.picked===v))c="ok";else if(S.picked===v)c="bad"}
+      if(S.showKey&&v===Q.a&&!S.revealed)c+=" key";
+      return `<button class="opt ${c}" data-act="pick" data-v="${v}" ${S.revealed?"disabled":""}><span class="dot" style="background:${v?"var(--leaf)":"var(--red)"}"></span>${v?"ПРАВДА":"ВЫМЫСЕЛ"}</button>`}).join("")}</div>`;
+  } else {
+    body=`<div class="clues">${Q.c.map((c,i)=>i<S.clues||S.revealed?`<div class="clue"><span class="n">${i+1}</span>${esc(c)}</div>`
+      :`<div class="clue hid"><span class="n">${i+1}</span>Подсказка №${i+1} скрыта</div>`).join("")}</div>`;
+  }
+  const ansText=R.type==="choice"?Q.o[Q.a]:R.type==="tf"?(Q.a?"ПРАВДА":"ВЫМЫСЕЛ"):Q.ans;
+  const link=S.links[k];
+  const clip=Q.clip?(link?`<a class="clip" href="${esc(link)}" target="_blank" rel="noopener">▶ ПОСМОТРЕТЬ ФРАГМЕНТ</a>`
+    :`<button class="clip" data-act="nolink">▶ ПОСМОТРЕТЬ ФРАГМЕНТ</button><span class="cliphint" id="cliphint" hidden>[ВСТАВИТЬ ССЫЛКУ НА ФРАГМЕНТ] — добавьте ссылку в режиме учителя</span>`):"";
+  const aw=S.awards[k]||[];
+  const answer=S.revealed?`<div class="answer"><div class="a">Правильный ответ: <b>${esc(ansText)}</b></div><div class="f">${esc(Q.f)}</div>
+    <div class="award">Кому ${Q.p} ${ptsWord(Q.p)}? ${teams().map((t,i)=>`<button class="aw ${aw.includes(i)?"on":""}" style="--tc:${TEAM_COLORS[i]}" data-act="award" data-t="${i}" aria-pressed="${aw.includes(i)}">${esc(t.name)} +${Q.p}</button>`).join("")}
+    ${clip?`<span class="row" style="margin-left:auto">${clip}</span>`:""}</div></div>`:"";
+  const keyStrip=S.showKey&&!S.revealed&&R.type==="clues"?`<div class="note" style="background:var(--sun);color:var(--ink);border-radius:10px;padding:.3em .8em;align-self:flex-start">Для учителя: ${esc(ansText)}</div>`:"";
+  const main=`<div class="qwrap"><div class="qhead"><span class="tag">Вопрос ${S.q+1} из ${R.qs.length}</span>
+     ${Q.t?`<span class="tag lit">${esc(Q.t)}</span>`:""}<span class="stars" title="${Q.p} ${ptsWord(Q.p)}" style="font-size:max(16px,1.8cqw)">${stars(Q.p)}</span>
+     <span class="qcount">${Q.p} ${ptsWord(Q.p)}</span></div>
+    ${R.type==="clues"?`<h2 class="qtext">Угадайте мультфильм по трём подсказкам</h2>`:`<p class="qtext">${esc(Q.q)}</p>`}
+    ${keyStrip}${body}${answer}</div>`;
+  let left=`<button class="btn alt" data-act="go" data-to="menu">В МЕНЮ</button>`;
+  let right="";
+  const tbtn=`<button class="timer" id="timer" data-act="timer">⏱ 30 сек</button>`;
+  if(!S.revealed){
+    right=(R.type==="clues"&&S.clues<3?`<button class="btn sun" data-act="clue">СЛЕДУЮЩАЯ ПОДСКАЗКА</button>`:"")+`<button class="btn" data-act="reveal">ПОКАЗАТЬ ОТВЕТ</button>`;
+  } else right=`<button class="btn green" data-act="next">${last?(S.r===4?"К ИТОГАМ":"ИТОГИ РАУНДА"):"ДАЛЬШЕ"}</button>`;
+  return{main,bottom:`<div class="grp">${left}${tbtn}</div><div class="grp">${right}</div>`};
+}
+function scores(){
+  const max=Math.max(10,...teams().map(t=>t.score));
+  const fromRound=S.from==="round";
+  return{main:`<div class="title-row"><h2>${fromRound?"Итоги раунда "+(S.r+1):"Счёт"}</h2><span class="note">Кнопки «−» и «+» меняют баллы вручную</span></div>
+   <div class="board">${teams().map((t,i)=>`<div class="brow" style="--tc:${TEAM_COLORS[i]}"><div class="name"><i style="background:${TEAM_COLORS[i]}"></i><span>${esc(t.name)}</span></div>
+    <div class="bar"><div style="width:${Math.max(4,t.score/max*100)}%"></div></div>
+    <div class="pm"><button data-act="adj" data-t="${i}" data-d="-1" aria-label="Минус балл">−</button><b>${t.score}</b><button data-act="adj" data-t="${i}" data-d="1" aria-label="Плюс балл">+</button></div></div>`).join("")}</div>`,
+  bottom:`<button class="btn alt" data-act="go" data-to="menu">В МЕНЮ</button>
+   ${fromRound&&S.r<4?`<button class="btn" data-act="round" data-r="${S.r+1}">СЛЕДУЮЩИЙ РАУНД</button>`:fromRound?`<button class="btn" data-act="go" data-to="final">ИТОГИ ИГРЫ</button>`:""}`};
+}
+function final(){
+  const list=teams().map((t,i)=>({...t,i})).sort((a,b)=>b.score-a.score);
+  const any=list.some(t=>t.score>0);
+  let rank=0,prev=null; list.forEach((t,j)=>{if(t.score!==prev){rank++;prev=t.score}t.place=rank});
+  const medal=["🥇","🥈","🥉"];
+  const rows=any?list.map(t=>`<div class="place"><span class="m">${medal[t.place-1]||"🎈"}</span>${esc(t.name)}<span class="s">${t.score} ${ptsWord(t.score)}</span></div>`).join("")
+    :medal.map(m=>`<div class="place"><span class="m">${m}</span>Команда — ______</div>`).join("")+`<p class="note">Баллы ещё не выставлены. Добавьте их на экране «Счёт» или в режиме учителя.</p>`;
+  return{main:`<div class="final"><div><h2>ИГРА ОКОНЧЕНА!</h2><p style="font-size:max(20px,2.6cqw);font-family:var(--display);margin:.4em 0">Спасибо за игру!</p>
+    <p>Мультфильмы часто помогают нам по-новому увидеть книги, героев и истории, которые мы уже знаем.</p></div>
+    <div class="podium">${rows}</div></div>`,
+  bottom:`<button class="btn alt" data-act="go" data-to="menu">В МЕНЮ</button><div class="grp"><button class="btn sun" data-act="go" data-to="scores">ИЗМЕНИТЬ СЧЁТ</button><button class="btn alt" data-act="teacher">РЕЖИМ УЧИТЕЛЯ</button></div>`};
+}
+
+/* ============ РЕЖИМ УЧИТЕЛЯ ============ */
+function renderPanel(){
+  const R=ROUNDS[S.r], inQ=S.screen==="question", Q=inQ?R.qs[S.q]:null;
+  const ans=Q?(R.type==="choice"?Q.o[Q.a]:R.type==="tf"?(Q.a?"ПРАВДА":"ВЫМЫСЕЛ"):Q.ans):"";
+  const clipQs=[];ROUNDS.forEach((r,ri)=>r.qs.forEach((q,qi)=>{if(q.clip)clipQs.push({ri,qi,q:q.q})}));
+  $("panel").innerHTML=`<div class="pbox" role="dialog" aria-label="Режим учителя">
+   <div class="prow" style="justify-content:space-between"><h3>Режим учителя</h3><button class="pbtn" data-act="teacher">Закрыть</button></div>
+   <section><h4>Ответы</h4>
+    <label class="prow"><input type="checkbox" id="show-key" data-act="showKey" ${S.showKey?"checked":""}> Подсвечивать правильный ответ до показа детям</label>
+    ${inQ?`<div class="keyline">Сейчас: раунд ${S.r+1}, вопрос ${S.q+1}. Ответ: ${esc(ans)}</div>
+    <div class="prow" style="margin-top:8px"><button class="pbtn" data-act="reveal">Показать ответ классу</button><button class="pbtn" data-act="skip">Пропустить вопрос</button></div>`:`<p class="small">Откройте вопрос, чтобы увидеть здесь его ответ.</p>`}
+   </section>
+   <section><h4>Команды и баллы</h4>
+    ${S.teams.slice(0,S.teamCount).map((t,i)=>`<div class="prow"><input type="text" id="p-name-${i}" data-name="${i}" value="${esc(t.name)}" maxlength="22" aria-label="Название команды ${i+1}">
+      <button class="pbtn" data-act="adj" data-t="${i}" data-d="-1">−1</button>
+      <input type="number" id="p-score-${i}" data-score="${i}" value="${t.score}" aria-label="Баллы команды ${i+1}">
+      <button class="pbtn" data-act="adj" data-t="${i}" data-d="1">+1</button></div>`).join("")}
+    <div class="prow"><span class="small">Команд:</span><button class="pbtn ${S.teamCount===3?"cur":""}" data-act="count" data-n="3">3</button><button class="pbtn ${S.teamCount===4?"cur":""}" data-act="count" data-n="4">4</button></div>
+   </section>
+   <section><h4>Перейти</h4>
+    <div class="prow">${ROUNDS.map((r,i)=>`<button class="pbtn ${S.r===i&&inQ?"cur":""}" data-act="round" data-r="${i}">${i+1}. ${esc(r.title)}</button>`).join("")}</div>
+    <div class="prow"><span class="small">Вопрос раунда ${S.r+1}:</span>${R.qs.map((_,i)=>`<button class="pbtn ${inQ&&S.q===i?"cur":""}" data-act="jumpq" data-q="${i}">${i+1}</button>`).join("")}</div>
+    <div class="prow"><button class="pbtn" data-act="go" data-to="menu">Меню раундов</button><button class="pbtn" data-act="go" data-to="scores">Счёт</button><button class="pbtn" data-act="go" data-to="cover">Обложка</button></div>
+   </section>
+   <section><h4>Завершение</h4>
+    <div class="prow">${confirmEnd?`<span class="small">Завершить игру сейчас?</span><button class="pbtn danger" data-act="endNow">Да, к итогам</button><button class="pbtn" data-act="cancel">Отмена</button>`
+      :`<button class="pbtn danger" data-act="end">Завершить игру досрочно</button>`}</div>
+    <div class="prow">${confirmReset?`<span class="small">Обнулить баллы и прогресс?</span><button class="pbtn danger" data-act="resetNow">Да, сбросить</button><button class="pbtn" data-act="cancel">Отмена</button>`
+      :`<button class="pbtn" data-act="reset">Новая игра (сбросить баллы)</button>`}</div>
+   </section>
+   <section><h4>Фрагменты мультфильмов</h4>
+    <p class="small">Вставьте ссылки на короткие фрагменты из официальных источников. Кнопка «Посмотреть фрагмент» появится после ответа.</p>
+    ${clipQs.map(c=>`<div><div class="linkq">Р${c.ri+1}·В${c.qi+1}: ${esc(c.q)}</div><div class="prow"><input type="url" id="link-${c.ri}-${c.qi}" data-link="${c.ri}-${c.qi}" placeholder="[ВСТАВИТЬ ССЫЛКУ НА ФРАГМЕНТ]" value="${esc(S.links[c.ri+"-"+c.qi]||"")}"></div></div>`).join("")}
+   </section>
+   <section><h4>Музыка в меню</h4>
+    <p class="small">Встроенная мелодия написана для этой игры. Можно загрузить свой файл (royalty-free).</p>
+    <div class="prow"><input type="file" id="music-file" accept="audio/*"><button class="pbtn" data-act="musicDefault">Встроенная мелодия</button></div>
+   </section>
+   <p class="small">Клавиши: → или пробел — следующий шаг, У — режим учителя.</p>
+  </div>`;
+}
+
+/* ============ ДЕЙСТВИЯ ============ */
+function goQ(r,q){stopTimer();timerDone=false;timer.left=0;S.r=r;S.q=q;S.revealed=false;S.picked=null;S.clues=1;S.screen="question"}
+function reveal(){if(S.revealed)return;S.revealed=true;stopTimer();sfx("ok")}
+function next(){const R=ROUNDS[S.r];
+  if(S.q<R.qs.length-1){goQ(S.r,S.q+1)} else {S.done[S.r]=true;stopTimer();
+    if(S.r===4){S.screen="final";victory()} else {S.from="round";S.screen="scores"}}}
+function victory(){sfx("win");confetti()}
+function act(el,e){
+  const a=el.dataset.act; ac();
+  switch(a){
+   case "go": S.from=null; if(el.dataset.to==="final")confirmEnd=false; stopTimer(); S.screen=el.dataset.to; if(S.screen==="final")victory(); break;
+   case "round": S.r=+el.dataset.r; S.screen="intro"; stopTimer(); break;
+   case "startRound": goQ(S.r,0); break;
+   case "jumpq": goQ(S.r,+el.dataset.q); break;
+   case "pick":{ if(S.revealed)return; const R=ROUNDS[S.r],Q=R.qs[S.q];
+     const v=R.type==="tf"?el.dataset.v==="true":+el.dataset.i; S.picked=v;
+     if(v===Q.a){S.revealed=true;stopTimer();sfx("ok")} else {sfx("bad")} break;}
+   case "reveal": reveal(); break;
+   case "clue": if(S.clues<3){S.clues++;sfx("clue")} break;
+   case "next": next(); break;
+   case "skip": next(); break;
+   case "award":{ const k=qKey(),t=+el.dataset.t,p=ROUNDS[S.r].qs[S.q].p; const arr=S.awards[k]||(S.awards[k]=[]);
+     const j=arr.indexOf(t); if(j>=0){arr.splice(j,1);S.teams[t].score-=p} else {arr.push(t);S.teams[t].score+=p;sfx("clue")} break;}
+   case "adj": S.teams[+el.dataset.t].score=Math.max(0,S.teams[+el.dataset.t].score+ +el.dataset.d); break;
+   case "count": S.teamCount=+el.dataset.n; break;
+   case "ideas":{ const pool=[...NAME_IDEAS].sort(()=>Math.random()-.5); S.teams.forEach((t,i)=>t.name=pool[i]); break;}
+   case "timer": if(timer.id||timerDone){stopTimer();timerDone=false;renderTimer();return} startTimer(30); return;
+   case "nolink": { const h=$("cliphint"); if(h)h.hidden=false; return;}
+   case "sound": S.sound=!S.sound; break;
+   case "music": S.music=!S.music; break;
+   case "musicDefault": {const cm=$("customMusic"); cm.pause(); cm.removeAttribute("src"); cm.load(); break;}
+   case "fs": { const st=$("stage"); try{ if(document.fullscreenElement) document.exitFullscreen(); else st.requestFullscreen().catch(()=>{}); }catch(err){} return;}
+   case "teacher": panelOpen=!panelOpen; confirmEnd=confirmReset=false; $("panel").hidden=!panelOpen; if(panelOpen)renderPanel(); return;
+   case "showKey": S.showKey=el.checked; break;
+   case "end": confirmEnd=true; renderPanel(); return;
+   case "endNow": confirmEnd=false; stopTimer(); S.screen="final"; panelOpen=false; $("panel").hidden=true; victory(); break;
+   case "reset": confirmReset=true; renderPanel(); return;
+   case "resetNow": { const keep={teams:S.teams.map(t=>({name:t.name,score:0})),teamCount:S.teamCount,links:S.links,sound:S.sound,music:S.music};
+     S=Object.assign(fresh(),keep); S.screen="menu"; confirmReset=false; break;}
+   case "cancel": confirmEnd=confirmReset=false; renderPanel(); return;
+  }
+  render();
+}
+document.addEventListener("click",e=>{const el=e.target.closest("[data-act]"); if(!el)return;
+  if(el.dataset.act==="showKey")return;
+  act(el,e)});
+$("panel").addEventListener("click",e=>{if(e.target.id==="panel"){act({dataset:{act:"teacher"}})}});
+document.addEventListener("change",e=>{const el=e.target;
+  if(el.dataset.act==="showKey"){act(el);return}
+  if(el.id==="music-file"&&el.files[0]){const cm=$("customMusic"); cm.src=URL.createObjectURL(el.files[0]); S.music=true; render(); return}
+  if(el.dataset.score!==undefined){S.teams[+el.dataset.score].score=Math.max(0,parseInt(el.value)||0); render(); return}
+  if(el.dataset.link!==undefined){const v=el.value.trim(); if(v)S.links[el.dataset.link]=v; else delete S.links[el.dataset.link]; save(); return}
+});
+document.addEventListener("input",e=>{const el=e.target;
+  if(el.dataset.name!==undefined){S.teams[+el.dataset.name].name=el.value||("Команда "+(+el.dataset.name+1)); save(); renderTop();}
+});
+document.addEventListener("keydown",e=>{
+  if(e.target.matches("input,select,textarea"))return;
+  if(e.key==="у"||e.key==="У"||e.key==="t"||e.key==="T"){act({dataset:{act:"teacher"}});return}
+  if(e.key==="ArrowRight"||e.key===" "){
+    if(S.screen==="question"){e.preventDefault(); const R=ROUNDS[S.r];
+      if(!S.revealed){ if(R.type==="clues"&&S.clues<3){S.clues++;sfx("clue");render()} else {reveal();render()} } else {next();render()} }
+    else if(S.screen==="intro"){e.preventDefault();goQ(S.r,0);render()}
+  }
+  if(e.key==="Escape"&&panelOpen){act({dataset:{act:"teacher"}})}
+});
+
+/* ============ КОНФЕТТИ ============ */
+function confetti(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const cv=$("confetti"),st=$("stage");cv.hidden=false;cv.width=st.clientWidth;cv.height=st.clientHeight;
+  const x=cv.getContext("2d"),cols=["#D8473D","#F4B43A","#2F7FB8","#4E9A5B","#B0598F"];
+  const P=Array.from({length:140},()=>({x:Math.random()*cv.width,y:-Math.random()*cv.height*.5,vy:2+Math.random()*3,vx:-1+Math.random()*2,r:Math.random()*6.28,s:6+Math.random()*8,c:cols[Math.random()*5|0]}));
+  let f=0;(function tick(){x.clearRect(0,0,cv.width,cv.height);P.forEach(p=>{p.y+=p.vy;p.x+=p.vx;p.r+=.1;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);x.restore()});
+    if(++f<220)requestAnimationFrame(tick);else{cv.hidden=true}})();
+}
+
+/* ============ СТАРТ ============ */
+function start(data){ if(data&&data.teams)S=Object.assign(fresh(),data); render(); }
+window.claude?.hot?.snapshot?.(()=>S);
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? null);
+</script>
+</body>
+</html>
