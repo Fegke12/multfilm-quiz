@@ -164,8 +164,6 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance;l
 .award{display:flex;gap:.7cqw;align-items:center;flex-wrap:wrap;font-size:max(13px,1.35cqw);font-weight:900}
 .aw{border:3px solid var(--tc);background:var(--paper);border-radius:999px;padding:.2em .8em;font-weight:900;color:var(--ink);font-size:max(13px,1.3cqw)}
 .aw.on{background:var(--tc);color:#fff}
-.clip{display:inline-flex;align-items:center;gap:.4em;white-space:nowrap;font-weight:900;font-size:max(13px,1.3cqw);background:var(--ink);color:var(--paper);border:0;border-radius:999px;padding:.3em 1em;text-decoration:none}
-.cliphint{font-size:max(12px,1.15cqw);color:var(--muted);font-weight:800}
 .row{display:flex;gap:1cqw;align-items:center;flex-wrap:wrap}
 
 .timer{font-family:var(--display);font-variant-numeric:tabular-nums;font-size:max(16px,1.8cqw);background:var(--paper);border:3px solid var(--ink);border-radius:14px;padding:.3em .8em;min-width:5.5em;text-align:center}
@@ -208,7 +206,6 @@ h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance;l
 .pbtn.cur{background:var(--ink);color:#fff}
 .keyline{background:var(--sun);border-radius:10px;padding:8px 10px;font-weight:900}
 .small{font-size:13px;color:var(--muted);font-weight:700}
-.linkq{font-size:13px;font-weight:800;margin-bottom:2px}
 
 @media (max-width:760px){
   .stage{aspect-ratio:auto;min-height:calc(100dvh - 24px)}
@@ -239,29 +236,29 @@ const ROUNDS = [
  {title:"Угадай мультфильм", minutes:7, color:"var(--t1)", type:"choice",
   about:"Прочитайте вопрос и выберите название мультфильма. Посоветуйтесь в команде, потом отвечайте.",
   qs:[
-   {q:"В каком мультфильме живут Винни-Пух и Пятачок?", o:["«Винни-Пух»","«Малыш и Карлсон»","«Ну, погоди!»","«Бременские музыканты»"], a:0, p:1, clip:"https://www.ivi.tv/watch/vinni-puh_i_vse_vse_vse",
+   {q:"В каком мультфильме живут Винни-Пух и Пятачок?", o:["«Винни-Пух»","«Малыш и Карлсон»","«Ну, погоди!»","«Бременские музыканты»"], a:0, p:1,
     f:"Мультфильм снял режиссёр Фёдор Хитрук в 1969 году. Винни-Пуха озвучил актёр Евгений Леонов."},
-   {q:"Мальчик по имени Дядя Фёдор уезжает жить в деревню вместе с котом и псом. Как называется мультфильм?", o:["«Каникулы Бонифация»","«Трое из Простоквашино»","«Котёнок по имени Гав»","«Крокодил Гена»"], a:1, p:1, clip:"https://www.ivi.tv/watch/prostokvashino",
+   {q:"Мальчик по имени Дядя Фёдор уезжает жить в деревню вместе с котом и псом. Как называется мультфильм?", o:["«Каникулы Бонифация»","«Трое из Простоквашино»","«Котёнок по имени Гав»","«Крокодил Гена»"], a:1, p:1,
     f:"Мультфильм вышел в 1978 году. Он снят по повести Эдуарда Успенского «Дядя Фёдор, пёс и кот»."},
-   {q:"В каком мультфильме Трубадур путешествует с Ослом, Псом, Котом и Петухом?", o:["«Золотая антилопа»","«Снежная королева»","«Бременские музыканты»","«Двенадцать месяцев»"], a:2, p:2, clip:"https://www.ivi.tv/watch/3209",
+   {q:"В каком мультфильме Трубадур путешествует с Ослом, Псом, Котом и Петухом?", o:["«Золотая антилопа»","«Снежная королева»","«Бременские музыканты»","«Двенадцать месяцев»"], a:2, p:2,
     f:"Мультфильм вышел в 1969 году. Песни для него написал композитор Геннадий Гладков."},
-   {q:"В каком мультфильме девочка зимой идёт в лес за подснежниками?", o:["«Морозко»","«Снегурочка»","«Серебряное копытце»","«Двенадцать месяцев»"], a:3, p:2, clip:"https://www.culture.ru/live/movies/8223/dvenadcat-mesyacev",
+   {q:"В каком мультфильме девочка зимой идёт в лес за подснежниками?", o:["«Морозко»","«Снегурочка»","«Серебряное копытце»","«Двенадцать месяцев»"], a:3, p:2,
     f:"Мультфильм 1956 года снят по пьесе-сказке Самуила Маршака. У новогоднего костра девочка встречает все двенадцать месяцев года."},
-   {q:"В каком мультфильме к мальчику прилетает друг с пропеллером на спине?", o:["«Малыш и Карлсон»","«Незнайка в Солнечном городе»","«Винни-Пух»","«Буратино»"], a:0, p:1, clip:"https://www.ivi.tv/watch/malysh_i_karlson",
+   {q:"В каком мультфильме к мальчику прилетает друг с пропеллером на спине?", o:["«Малыш и Карлсон»","«Незнайка в Солнечном городе»","«Винни-Пух»","«Буратино»"], a:0, p:1,
     f:"Мультфильм «Малыш и Карлсон» вышел в 1968 году, а в 1970 году вышло продолжение — «Карлсон вернулся»."},
-   {q:"В каком мультфильме белка грызёт орешки с золотыми скорлупками?", o:["«Сказка о рыбаке и рыбке»","«Сказка о царе Салтане»","«Аленький цветочек»","«Конёк-Горбунок»"], a:1, p:2, clip:"https://www.culture.ru/live/movies/518/skazka-o-care-saltane",
+   {q:"В каком мультфильме белка грызёт орешки с золотыми скорлупками?", o:["«Сказка о рыбаке и рыбке»","«Сказка о царе Салтане»","«Аленький цветочек»","«Конёк-Горбунок»"], a:1, p:2,
     f:"Мультфильм «Сказка о царе Салтане» сняли в 1984 году. Герои в нём говорят стихами Пушкина."}
   ]},
  {title:"Герои", minutes:7, color:"var(--t2)", type:"choice",
   about:"Вспомните героев мультфильмов: как их зовут и кто с кем дружит.",
   qs:[
-   {q:"Кто лучший друг Чебурашки?", o:["Кот Матроскин","Крокодил Гена","Винни-Пух","Карлсон"], a:1, p:1, clip:"https://www.ivi.tv/watch/cheburashka_i_krokodil_gena",
+   {q:"Кто лучший друг Чебурашки?", o:["Кот Матроскин","Крокодил Гена","Винни-Пух","Карлсон"], a:1, p:1,
     f:"Чебурашку придумал писатель Эдуард Успенский. В книге он назван неизвестным науке зверем."},
-   {q:"Как зовут пса из Простоквашино?", o:["Бобик","Тузик","Шарик","Дружок"], a:2, p:1, clip:"https://www.ivi.tv/watch/prostokvashino",
+   {q:"Как зовут пса из Простоквашино?", o:["Бобик","Тузик","Шарик","Дружок"], a:2, p:1,
     f:"Шарика в мультфильмах о Простоквашино озвучил актёр Лев Дуров."},
    {q:"Как зовут ослика — друга Винни-Пуха?", o:["Пятачок","Иа-Иа","Кролик","Тигра"], a:1, p:1,
     f:"Имя ослика похоже на крик настоящего осла. По-английски его зовут Eeyore."},
-   {q:"Кто в мультфильме «Ну, погоди!» всё время пытается поймать Зайца?", o:["Лиса","Медведь","Волк","Кот Леопольд"], a:2, p:1, clip:"https://www.ivi.tv/watch/nu_pogodi",
+   {q:"Кто в мультфильме «Ну, погоди!» всё время пытается поймать Зайца?", o:["Лиса","Медведь","Волк","Кот Леопольд"], a:2, p:1,
     f:"Волка озвучил актёр Анатолий Папанов, а Зайца — актриса Клара Румянова."},
    {q:"Как зовут почтальона из Простоквашино?", o:["Печкин","Пончиков","Петров","Пяточкин"], a:0, p:2,
     f:"Почтальон Печкин есть и в книге Успенского. В мультфильмах его озвучил актёр Борис Новиков."}
@@ -310,14 +307,13 @@ const ROUNDS = [
 const TEAM_COLORS=["var(--t1)","var(--t2)","var(--t3)","var(--t4)"];
 const NAME_IDEAS=["Колобки","Звёздочки","Паровозики","Снегири","Кораблики","Ромашки","Непоседы","Фантазёры"];
 const LETTERS=["А","Б","В","Г"];
-function srcName(u){try{const h=new URL(u).hostname.replace(/^www\./,"");return {"ivi.tv":"Иви","culture.ru":"Культура.РФ","premier.one":"PREMIER","kinopoisk.ru":"Кинопоиск","okko.tv":"Okko","rutube.ru":"Rutube","vk.com":"VK Видео","youtube.com":"YouTube"}[h]||h}catch(e){return ""}}
 
 /* ============ СОСТОЯНИЕ ============ */
 const KEY="multfilm-game-v1";
 function fresh(){return{screen:"cover",teamCount:4,teams:[0,1,2,3].map(i=>({name:"Команда "+(i+1),score:0})),
-  r:0,q:0,revealed:false,picked:null,clues:1,awards:{},done:{},showKey:false,sound:true,music:false,links:{}}}
+  r:0,q:0,revealed:false,picked:null,clues:1,awards:{},done:{},showKey:false,sound:true,music:false}}
 let S=fresh();
-try{const s=JSON.parse(localStorage.getItem(KEY)||"null"); if(s&&s.teams) S=Object.assign(fresh(),s);}catch(e){}
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null"); if(s&&s.teams){ S=Object.assign(fresh(),s); delete S.links; }}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 let panelOpen=false, confirmEnd=false, confirmReset=false;
 
@@ -459,13 +455,9 @@ function question(R){
       :`<div class="clue hid"><span class="n">${i+1}</span>Подсказка №${i+1} скрыта</div>`).join("")}</div>`;
   }
   const ansText=R.type==="choice"?Q.o[Q.a]:R.type==="tf"?(Q.a?"ПРАВДА":"ВЫМЫСЕЛ"):Q.ans;
-  const link=S.links[k]||(typeof Q.clip==="string"?Q.clip:"");
-  const clip=Q.clip?(link?`<a class="clip" href="${esc(link)}" target="_blank" rel="noopener">▶ ПОСМОТРЕТЬ ФРАГМЕНТ <small style="opacity:.75;font-weight:800">· ${esc(srcName(link))}</small></a>`
-    :`<button class="clip" data-act="nolink">▶ ПОСМОТРЕТЬ ФРАГМЕНТ</button><span class="cliphint" id="cliphint" hidden>[ВСТАВИТЬ ССЫЛКУ НА ФРАГМЕНТ] — добавьте ссылку в режиме учителя</span>`):"";
   const aw=S.awards[k]||[];
   const answer=S.revealed?`<div class="answer"><div class="a">Правильный ответ: <b>${esc(ansText)}</b></div><div class="f">${esc(Q.f)}</div>
-    <div class="award">Кому ${Q.p} ${ptsWord(Q.p)}? ${teams().map((t,i)=>`<button class="aw ${aw.includes(i)?"on":""}" style="--tc:${TEAM_COLORS[i]}" data-act="award" data-t="${i}" aria-pressed="${aw.includes(i)}">${esc(t.name)} +${Q.p}</button>`).join("")}
-    ${clip?`<span class="row" style="margin-left:auto">${clip}</span>`:""}</div></div>`:"";
+    <div class="award">Кому ${Q.p} ${ptsWord(Q.p)}? ${teams().map((t,i)=>`<button class="aw ${aw.includes(i)?"on":""}" style="--tc:${TEAM_COLORS[i]}" data-act="award" data-t="${i}" aria-pressed="${aw.includes(i)}">${esc(t.name)} +${Q.p}</button>`).join("")}</div></div>`:"";
   const keyStrip=S.showKey&&!S.revealed&&R.type==="clues"?`<div class="note" style="background:var(--sun);color:var(--ink);border-radius:10px;padding:.3em .8em;align-self:flex-start">Для учителя: ${esc(ansText)}</div>`:"";
   const main=`<div class="qwrap"><div class="qhead"><span class="tag">Вопрос ${S.q+1} из ${R.qs.length}</span>
      ${Q.t?`<span class="tag lit">${esc(Q.t)}</span>`:""}<span class="stars" title="${Q.p} ${ptsWord(Q.p)}" style="font-size:max(16px,1.8cqw)">${stars(Q.p)}</span>
@@ -507,7 +499,6 @@ function final(){
 function renderPanel(){
   const R=ROUNDS[S.r], inQ=S.screen==="question", Q=inQ?R.qs[S.q]:null;
   const ans=Q?(R.type==="choice"?Q.o[Q.a]:R.type==="tf"?(Q.a?"ПРАВДА":"ВЫМЫСЕЛ"):Q.ans):"";
-  const clipQs=[];ROUNDS.forEach((r,ri)=>r.qs.forEach((q,qi)=>{if(q.clip)clipQs.push({ri,qi,q:q.q})}));
   $("panel").innerHTML=`<div class="pbox" role="dialog" aria-label="Режим учителя">
    <div class="prow" style="justify-content:space-between"><h3>Режим учителя</h3><button class="pbtn" data-act="teacher">Закрыть</button></div>
    <section><h4>Ответы</h4>
@@ -532,10 +523,6 @@ function renderPanel(){
       :`<button class="pbtn danger" data-act="end">Завершить игру досрочно</button>`}</div>
     <div class="prow">${confirmReset?`<span class="small">Обнулить баллы и прогресс?</span><button class="pbtn danger" data-act="resetNow">Да, сбросить</button><button class="pbtn" data-act="cancel">Отмена</button>`
       :`<button class="pbtn" data-act="reset">Новая игра (сбросить баллы)</button>`}</div>
-   </section>
-   <section><h4>Фрагменты мультфильмов</h4>
-    <p class="small">Ссылки уже вставлены: официальные страницы мультфильмов на Иви и Культура.РФ (показаны серым). Чтобы заменить ссылку на свою, вставьте её в поле. Пустое поле — ссылка по умолчанию.</p>
-    ${clipQs.map(c=>`<div><div class="linkq">Р${c.ri+1}·В${c.qi+1}: ${esc(c.q)}</div><div class="prow"><input type="url" id="link-${c.ri}-${c.qi}" data-link="${c.ri}-${c.qi}" placeholder="${esc(typeof ROUNDS[c.ri].qs[c.qi].clip==="string"?ROUNDS[c.ri].qs[c.qi].clip:"[ВСТАВИТЬ ССЫЛКУ НА ФРАГМЕНТ]")}" value="${esc(S.links[c.ri+"-"+c.qi]||"")}"></div></div>`).join("")}
    </section>
    <section><h4>Музыка в меню</h4>
     <p class="small">Встроенная мелодия написана для этой игры. Можно загрузить свой файл (royalty-free).</p>
@@ -572,7 +559,6 @@ function act(el,e){
    case "count": S.teamCount=+el.dataset.n; break;
    case "ideas":{ const pool=[...NAME_IDEAS].sort(()=>Math.random()-.5); S.teams.forEach((t,i)=>t.name=pool[i]); break;}
    case "timer": if(timer.id||timerDone){stopTimer();timerDone=false;renderTimer();return} startTimer(30); return;
-   case "nolink": { const h=$("cliphint"); if(h)h.hidden=false; return;}
    case "sound": S.sound=!S.sound; break;
    case "music": S.music=!S.music; break;
    case "musicDefault": {const cm=$("customMusic"); cm.pause(); cm.removeAttribute("src"); cm.load(); break;}
@@ -582,7 +568,7 @@ function act(el,e){
    case "end": confirmEnd=true; renderPanel(); return;
    case "endNow": confirmEnd=false; stopTimer(); S.screen="final"; panelOpen=false; $("panel").hidden=true; victory(); break;
    case "reset": confirmReset=true; renderPanel(); return;
-   case "resetNow": { const keep={teams:S.teams.map(t=>({name:t.name,score:0})),teamCount:S.teamCount,links:S.links,sound:S.sound,music:S.music};
+   case "resetNow": { const keep={teams:S.teams.map(t=>({name:t.name,score:0})),teamCount:S.teamCount,sound:S.sound,music:S.music};
      S=Object.assign(fresh(),keep); S.screen="menu"; confirmReset=false; break;}
    case "cancel": confirmEnd=confirmReset=false; renderPanel(); return;
   }
@@ -596,7 +582,6 @@ document.addEventListener("change",e=>{const el=e.target;
   if(el.dataset.act==="showKey"){act(el);return}
   if(el.id==="music-file"&&el.files[0]){const cm=$("customMusic"); cm.src=URL.createObjectURL(el.files[0]); S.music=true; render(); return}
   if(el.dataset.score!==undefined){S.teams[+el.dataset.score].score=Math.max(0,parseInt(el.value)||0); render(); return}
-  if(el.dataset.link!==undefined){const v=el.value.trim(); if(v)S.links[el.dataset.link]=v; else delete S.links[el.dataset.link]; save(); return}
 });
 document.addEventListener("input",e=>{const el=e.target;
   if(el.dataset.name!==undefined){S.teams[+el.dataset.name].name=el.value||("Команда "+(+el.dataset.name+1)); save(); renderTop();}
